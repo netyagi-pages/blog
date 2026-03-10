@@ -1,0 +1,16 @@
+title: Netyagi Blog
+description: Vertical writing blog MVP for GitHub Pages
+lang: ja
+timezone: Asia/Tokyo
+baseurl: /blog
+theme: minima
+markdown: kramdown
+kramdown:
+  input: GFM
+permalink: /:categories/:year/:month/:day/:title/
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: post
