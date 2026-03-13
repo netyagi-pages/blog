@@ -59,6 +59,11 @@ a {
   border-radius: 20px;
   padding: 24px;
   backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+.post-card {
+  min-width: 0;
 }
 
 .post-header {
@@ -77,24 +82,53 @@ a {
   color: rgba(31, 26, 23, 0.7);
 }
 
-.post-body {
+.content-viewer {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 252, 246, 0.45);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  overflow: hidden;
+}
+
+.content-viewer__viewport {
+  min-width: 0;
+  min-height: min(81vh, 53rem);
+  max-height: min(81vh, 53rem);
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 18px 16px 18px 18px;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.content-viewer__flow {
   writing-mode: vertical-rl;
   text-orientation: mixed;
-  overflow-x: auto;
-  padding: 16px;
-  min-height: 70vh;
-  max-height: 75vh;
-  border-inline-start: 1px solid var(--line);
-  border-inline-end: 1px solid var(--line);
+  min-height: 100%;
+  width: max-content;
+  padding: 4px 10px;
   font-size: 1.1rem;
   line-height: 2.1;
+  text-align: justify;
+  text-justify: inter-ideograph;
 }
 
-.post-body p {
+.content-viewer--full .content-viewer__flow {
+  min-width: 100%;
+}
+
+.content-viewer__flow > :first-child {
+  margin-inline-start: 0;
+}
+
+.content-viewer__flow p {
   margin: 0 0 0 1.5em;
+  text-align: justify;
+  text-align-last: auto;
 }
 
-.post-body ruby rt {
+.content-viewer__flow ruby rt {
   font-size: 0.55em;
 }
 
@@ -124,6 +158,11 @@ a {
     box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
   }
 
+  .content-viewer {
+    background: rgba(255, 255, 255, 0.04);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
   .post-date {
     color: rgba(243, 238, 230, 0.72);
   }
@@ -142,9 +181,54 @@ a {
     padding: 16px;
   }
 
-  .post-body {
-    min-height: 60vh;
-    max-height: none;
+  .content-viewer__viewport {
+    min-height: min(78vh, 50rem);
+    max-height: min(78vh, 50rem);
+    padding: 14px 12px 14px 14px;
+  }
+
+  .content-viewer__flow {
     font-size: 1rem;
+    line-height: 1.9;
+  }
+}
+
+@media (max-width: 640px) {
+  .site-shell {
+    padding: 12px;
+  }
+
+  .site-content {
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .post-header {
+    margin-bottom: 18px;
+  }
+
+  .post-title {
+    font-size: 1.6rem;
+    line-height: 1.4;
+  }
+
+  .content-viewer {
+    border-radius: 14px;
+  }
+
+  .content-viewer__viewport {
+    min-height: min(72vh, 44rem);
+    max-height: min(72vh, 44rem);
+    padding: 12px 10px 12px 12px;
+  }
+
+  .content-viewer__flow {
+    font-size: 0.95rem;
+    line-height: 1.8;
+    padding: 2px 8px;
+  }
+
+  .content-viewer__flow p {
+    margin-left: 1.2em;
   }
 }
