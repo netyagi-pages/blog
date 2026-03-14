@@ -5,6 +5,11 @@
   --ink: #1f1a17;
   --line: rgba(31, 26, 23, 0.18);
   --accent: #8a2e24;
+  --scrollbar-track: rgba(176, 154, 126, 0.26);
+  --scrollbar-focus: rgba(195, 170, 138, 0.34);
+  --scrollbar-thumb-start: rgba(210, 188, 155, 0.96);
+  --scrollbar-thumb-end: rgba(190, 164, 132, 0.94);
+  --scrollbar-thumb-shadow: rgba(88, 67, 46, 0.14);
   --content-viewer-height-desktop: 44em;
   --content-viewer-height-tablet: 41em;
   --content-viewer-height-mobile: 39em;
@@ -133,28 +138,28 @@ a {
 
 .content-viewer__scrollbar-track {
   position: relative;
-  height: 14px;
+  height: 11px;
   border: 0;
   border-radius: 999px;
-  background: rgba(31, 26, 23, 0.12);
+  background: var(--scrollbar-track);
   outline: none;
   touch-action: none;
   cursor: pointer;
 }
 
 .content-viewer__scrollbar-track:focus-visible {
-  box-shadow: 0 0 0 2px rgba(138, 46, 36, 0.24);
+  box-shadow: 0 0 0 2px var(--scrollbar-focus);
 }
 
 .content-viewer__scrollbar-thumb {
   position: absolute;
   top: 2px;
   left: 0;
-  height: 10px;
+  height: 7px;
   border-radius: 999px;
   background:
-    linear-gradient(90deg, rgba(138, 46, 36, 0.9), rgba(180, 104, 76, 0.88));
-  box-shadow: 0 2px 6px rgba(31, 26, 23, 0.18);
+    linear-gradient(90deg, var(--scrollbar-thumb-start), var(--scrollbar-thumb-end));
+  box-shadow: 0 1px 4px var(--scrollbar-thumb-shadow);
   cursor: grab;
 }
 
@@ -194,6 +199,11 @@ a {
     --ink: #f3eee6;
     --line: rgba(243, 238, 230, 0.2);
     --accent: #d18e73;
+    --scrollbar-track: rgba(238, 222, 193, 0.16);
+    --scrollbar-focus: rgba(224, 201, 169, 0.28);
+    --scrollbar-thumb-start: rgba(205, 185, 154, 0.92);
+    --scrollbar-thumb-end: rgba(175, 151, 118, 0.9);
+    --scrollbar-thumb-shadow: rgba(0, 0, 0, 0.26);
   }
 
   body {
@@ -280,12 +290,12 @@ a {
   }
 
   .content-viewer__scrollbar-track {
-    height: 12px;
+    height: 10px;
   }
 
   .content-viewer__scrollbar-thumb {
     top: 2px;
-    height: 8px;
+    height: 6px;
   }
 
   .content-viewer__flow {
