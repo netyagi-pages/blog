@@ -127,6 +127,7 @@ a {
 
 .content-viewer__flow p {
   margin: 0 0 0 1.5em;
+  white-space: pre-line;
   text-align: justify;
   text-align-last: auto;
 }
