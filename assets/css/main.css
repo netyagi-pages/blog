@@ -98,6 +98,7 @@ a {
   min-width: 0;
   height: min(81vh, calc(var(--content-viewer-height-desktop) + 2.25rem));
   max-height: calc(var(--content-viewer-height-desktop) + 2.25rem);
+  direction: rtl;
   overflow-x: auto;
   overflow-y: hidden;
   padding: 18px 16px 18px 18px;
@@ -106,6 +107,7 @@ a {
 }
 
 .content-viewer__flow {
+  direction: ltr;
   writing-mode: vertical-rl;
   text-orientation: mixed;
   min-height: 100%;
