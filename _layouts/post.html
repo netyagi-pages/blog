@@ -9,7 +9,11 @@ layout: default
   </header>
 
   <div class="content-viewer content-viewer--full">
-    <div class="content-viewer__viewport" data-initial-scroll="article-start">
+    <div
+      class="content-viewer__viewport"
+      id="post-content-viewer-viewport"
+      data-initial-scroll="article-start"
+    >
       <div class="content-viewer__flow">
         <span
           aria-hidden="true"
@@ -19,6 +23,21 @@ layout: default
         {{ content }}
       </div>
     </div>
+    <div class="content-viewer__scrollbar" data-scrollbar hidden>
+      <div
+        class="content-viewer__scrollbar-track"
+        data-scrollbar-track
+        role="scrollbar"
+        aria-controls="post-content-viewer-viewport"
+        aria-orientation="horizontal"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="0"
+        tabindex="0"
+      >
+        <div class="content-viewer__scrollbar-thumb" data-scrollbar-thumb></div>
+      </div>
+    </div>
   </div>
 </article>
 
@@ -26,20 +45,26 @@ layout: default
   (function () {
     var viewport = document.querySelector('[data-initial-scroll="article-start"]');
     var marker = viewport ? viewport.querySelector("[data-article-start-marker]") : null;
+    var scrollbar = document.querySelector("[data-scrollbar]");
+    var track = scrollbar ? scrollbar.querySelector("[data-scrollbar-track]") : null;
+    var thumb = scrollbar ? scrollbar.querySelector("[data-scrollbar-thumb]") : null;
 
-    if (!viewport || !marker) {
+    if (!viewport || !marker || !scrollbar || !track || !thumb) {
       return;
     }
 
     var navigationEntry = performance.getEntriesByType
       ? performance.getEntriesByType("navigation")[0]
       : null;
+    var shouldPreserveScroll = navigationEntry && navigationEntry.type === "back_forward";
+    var metrics = null;
+    var dragState = null;
 
-    if (navigationEntry && navigationEntry.type === "back_forward") {
-      return;
+    function clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
     }
 
-    function getBestStartScrollLeft(element, startMarker) {
+    function getBestStartScrollLeft(element, startMarker, candidates) {
       var maxScroll = element.scrollWidth - element.clientWidth;
 
       if (maxScroll <= 0) {
@@ -48,7 +73,6 @@ layout: default
 
       var viewportRect = element.getBoundingClientRect();
       var original = element.scrollLeft;
-      var candidates = [0, maxScroll, -maxScroll];
       var seen = {};
       var best = null;
 
@@ -85,16 +109,225 @@ layout: default
       return best ? best.scrollLeft : 0;
     }
 
-    function alignToArticleStart() {
-      viewport.scrollLeft = getBestStartScrollLeft(viewport, marker);
+    function getScrollMetrics() {
+      var maxScroll = viewport.scrollWidth - viewport.clientWidth;
+
+      if (maxScroll <= 0) {
+        return null;
+      }
+
+      var original = viewport.scrollLeft;
+      var candidates = [0, maxScroll, -maxScroll];
+      var actuals = [];
+      var seen = {};
+
+      candidates.forEach(function (candidate) {
+        viewport.scrollLeft = candidate;
+
+        var actual = viewport.scrollLeft;
+        var key = String(actual);
+
+        if (seen[key]) {
+          return;
+        }
+
+        seen[key] = true;
+        actuals.push(actual);
+      });
+
+      viewport.scrollLeft = original;
+
+      if (!actuals.length) {
+        return null;
+      }
+
+      var minScroll = Math.min.apply(null, actuals);
+      var maxActualScroll = Math.max.apply(null, actuals);
+      var startScroll = getBestStartScrollLeft(viewport, marker, candidates);
+      var endScroll =
+        Math.abs(startScroll - minScroll) > Math.abs(startScroll - maxActualScroll)
+          ? minScroll
+          : maxActualScroll;
+
+      return {
+        startScroll: startScroll,
+        endScroll: endScroll,
+        minScroll: minScroll,
+        maxScroll: maxActualScroll,
+        thumbRatio: clamp(viewport.clientWidth / viewport.scrollWidth, 0.12, 1)
+      };
     }
 
+    function getProgress() {
+      if (!metrics || metrics.startScroll === metrics.endScroll) {
+        return 0;
+      }
+
+      return clamp(
+        (viewport.scrollLeft - metrics.startScroll) / (metrics.endScroll - metrics.startScroll),
+        0,
+        1
+      );
+    }
+
+    function setProgress(progress) {
+      if (!metrics) {
+        return;
+      }
+
+      viewport.scrollLeft =
+        metrics.startScroll + (metrics.endScroll - metrics.startScroll) * clamp(progress, 0, 1);
+    }
+
+    function getDisplayProgress() {
+      return 1 - getProgress();
+    }
+
+    function setDisplayProgress(progress) {
+      setProgress(1 - clamp(progress, 0, 1));
+    }
+
+    function syncScrollbar() {
+      if (!metrics) {
+        scrollbar.hidden = true;
+        return;
+      }
+
+      var progress = getProgress();
+      var displayProgress = getDisplayProgress();
+      var trackWidth = track.clientWidth;
+      var thumbWidth = Math.max(trackWidth * metrics.thumbRatio, 36);
+      var maxOffset = Math.max(trackWidth - thumbWidth, 0);
+      var offset = maxOffset * displayProgress;
+
+      scrollbar.hidden = false;
+      thumb.style.width = thumbWidth + "px";
+      thumb.style.transform = "translateX(" + offset + "px)";
+      track.setAttribute("aria-valuenow", String(Math.round(progress * 100)));
+    }
+
+    function refreshMetrics() {
+      metrics = getScrollMetrics();
+      syncScrollbar();
+    }
+
+    function alignToArticleStart() {
+      if (!metrics) {
+        return;
+      }
+
+      viewport.scrollLeft = metrics.startScroll;
+      syncScrollbar();
+    }
+
+    function jumpToClientX(clientX) {
+      if (!metrics) {
+        return;
+      }
+
+      var trackRect = track.getBoundingClientRect();
+      var thumbRect = thumb.getBoundingClientRect();
+      var usableWidth = Math.max(trackRect.width - thumbRect.width, 0);
+      var rawOffset = clientX - trackRect.left - thumbRect.width / 2;
+      var nextProgress = usableWidth > 0 ? rawOffset / usableWidth : 0;
+
+      setDisplayProgress(nextProgress);
+      syncScrollbar();
+    }
+
+    function stopDragging() {
+      dragState = null;
+      document.removeEventListener("pointermove", handlePointerMove);
+      document.removeEventListener("pointerup", stopDragging);
+      document.removeEventListener("pointercancel", stopDragging);
+    }
+
+    function handlePointerMove(event) {
+      if (!dragState || !metrics) {
+        return;
+      }
+
+      var trackRect = track.getBoundingClientRect();
+      var thumbRect = thumb.getBoundingClientRect();
+      var usableWidth = Math.max(trackRect.width - thumbRect.width, 1);
+      var delta = event.clientX - dragState.startX;
+
+      setDisplayProgress(dragState.startProgress + delta / usableWidth);
+      syncScrollbar();
+    }
+
+    track.addEventListener("pointerdown", function (event) {
+      if (scrollbar.hidden) {
+        return;
+      }
+
+      if (event.target === thumb) {
+        dragState = {
+          startX: event.clientX,
+          startProgress: getDisplayProgress()
+        };
+
+        thumb.setPointerCapture(event.pointerId);
+        document.addEventListener("pointermove", handlePointerMove);
+        document.addEventListener("pointerup", stopDragging);
+        document.addEventListener("pointercancel", stopDragging);
+        return;
+      }
+
+      jumpToClientX(event.clientX);
+    });
+
+    track.addEventListener("keydown", function (event) {
+      if (!metrics) {
+        return;
+      }
+
+      if (event.key === "Home") {
+        setProgress(0);
+      } else if (event.key === "End") {
+        setProgress(1);
+      } else if (event.key === "ArrowLeft") {
+        setProgress(getProgress() + 0.08);
+      } else if (event.key === "ArrowRight") {
+        setProgress(getProgress() - 0.08);
+      } else if (event.key === "PageUp") {
+        setProgress(getProgress() - 0.2);
+      } else if (event.key === "PageDown") {
+        setProgress(getProgress() + 0.2);
+      } else {
+        return;
+      }
+
+      event.preventDefault();
+      syncScrollbar();
+    });
+
+    viewport.addEventListener("scroll", syncScrollbar, { passive: true });
+    window.addEventListener("resize", refreshMetrics);
+    window.addEventListener("pageshow", function () {
+      refreshMetrics();
+
+      if (!shouldPreserveScroll) {
+        alignToArticleStart();
+      }
+    });
+
     requestAnimationFrame(function () {
-      alignToArticleStart();
+      refreshMetrics();
+
+      if (!shouldPreserveScroll) {
+        alignToArticleStart();
+      }
 
       if (document.fonts && document.fonts.ready) {
         document.fonts.ready.then(function () {
-          requestAnimationFrame(alignToArticleStart);
+          requestAnimationFrame(function () {
+            refreshMetrics();
+
+            if (!shouldPreserveScroll) {
+              alignToArticleStart();
+            }
+          });
         });
       }
     });

@@ -98,16 +98,16 @@ a {
   min-width: 0;
   height: min(81vh, calc(var(--content-viewer-height-desktop) + 2.25rem));
   max-height: calc(var(--content-viewer-height-desktop) + 2.25rem);
-  direction: rtl;
   overflow-x: auto;
   overflow-y: hidden;
   padding: 18px 16px 18px 18px;
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  scrollbar-color: transparent transparent;
 }
 
 .content-viewer__flow {
-  direction: ltr;
   writing-mode: vertical-rl;
   text-orientation: mixed;
   min-height: 100%;
@@ -117,6 +117,49 @@ a {
   line-height: 2.1;
   text-align: justify;
   text-justify: inter-ideograph;
+}
+
+.content-viewer__viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.content-viewer__scrollbar {
+  padding: 0 18px 16px;
+}
+
+.content-viewer__scrollbar[hidden] {
+  display: none;
+}
+
+.content-viewer__scrollbar-track {
+  position: relative;
+  height: 14px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(31, 26, 23, 0.12);
+  outline: none;
+  touch-action: none;
+  cursor: pointer;
+}
+
+.content-viewer__scrollbar-track:focus-visible {
+  box-shadow: 0 0 0 2px rgba(138, 46, 36, 0.24);
+}
+
+.content-viewer__scrollbar-thumb {
+  position: absolute;
+  top: 2px;
+  left: 0;
+  height: 10px;
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, rgba(138, 46, 36, 0.9), rgba(180, 104, 76, 0.88));
+  box-shadow: 0 2px 6px rgba(31, 26, 23, 0.18);
+  cursor: grab;
+}
+
+.content-viewer__scrollbar-thumb:active {
+  cursor: grabbing;
 }
 
 .content-viewer--full .content-viewer__flow {
@@ -193,6 +236,10 @@ a {
     padding: 14px 12px 14px 14px;
   }
 
+  .content-viewer__scrollbar {
+    padding: 0 14px 14px;
+  }
+
   .content-viewer__flow {
     font-size: 1rem;
     line-height: 1.9;
@@ -226,6 +273,19 @@ a {
     height: min(72vh, calc(var(--content-viewer-height-mobile) + 1.5rem));
     max-height: calc(var(--content-viewer-height-mobile) + 1.5rem);
     padding: 12px 10px 12px 12px;
+  }
+
+  .content-viewer__scrollbar {
+    padding: 0 12px 12px;
+  }
+
+  .content-viewer__scrollbar-track {
+    height: 12px;
+  }
+
+  .content-viewer__scrollbar-thumb {
+    top: 2px;
+    height: 8px;
   }
 
   .content-viewer__flow {
