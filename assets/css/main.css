@@ -2,7 +2,7 @@
   color-scheme: light dark;
   --bg: #f5f1e8;
   --paper: #fbf8f1;
-  --ink: #1f1a17;
+  --ink: #5E5E5E;
   --line: rgba(31, 26, 23, 0.18);
   --accent: #8a2e24;
   --scrollbar-track: rgba(164, 157, 147, 0.24);
@@ -141,7 +141,7 @@ a {
   width: max-content;
   padding: 4px 10px;
   font-size: 1.1rem;
-  line-height: 1.9;
+  line-height: 1.8;
   text-align: justify;
   text-justify: inter-ideograph;
 }
@@ -197,11 +197,30 @@ a {
   margin-inline-start: 0;
 }
 
-.content-viewer__flow p {
-  margin: 0 0 0 1.5em;
+.content-viewer__flow > p {
+  margin: 0 0 0 1.6em;
   white-space: pre-line;
   text-align: justify;
   text-align-last: auto;
+}
+
+.content-viewer__flow .book-quote {
+  margin: 0;
+  margin-block-end: 1.6em;
+  padding: 0;
+  padding-inline-start: 1em;
+  font-style: normal;
+}
+
+.content-viewer__flow .book-quote p {
+  margin: 0;
+  white-space: normal;
+  text-align: justify;
+  text-align-last: auto;
+}
+
+.content-viewer__flow .book-quote p + p {
+  margin: 0 0 0 1.6em;
 }
 
 .content-viewer__flow ruby rt {
@@ -218,7 +237,7 @@ a {
   :root {
     --bg: #12100f;
     --paper: rgba(28, 24, 22, 0.88);
-    --ink: #f3eee6;
+    --ink: #c0c0c0;
     --line: rgba(243, 238, 230, 0.2);
     --accent: #d18e73;
     --scrollbar-track: rgba(220, 212, 201, 0.14);
@@ -326,7 +345,15 @@ a {
     padding: 2px 8px;
   }
 
-  .content-viewer__flow p {
+  .content-viewer__flow > p {
+    margin-left: 1.2em;
+  }
+
+  .content-viewer__flow .book-quote {
+    margin-block-end: 1.2em;
+  }
+
+  .content-viewer__flow .book-quote p + p {
     margin-left: 1.2em;
   }
 }
