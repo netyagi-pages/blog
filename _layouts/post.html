@@ -9,10 +9,73 @@ layout: default
   </header>
 
   <div class="content-viewer content-viewer--full">
-    <div class="content-viewer__viewport">
+    <div class="content-viewer__viewport" data-initial-scroll="article-start">
       <div class="content-viewer__flow">
         {{ content }}
       </div>
     </div>
   </div>
 </article>
+
+<script>
+  (function () {
+    var viewport = document.querySelector('[data-initial-scroll="article-start"]');
+
+    if (!viewport) {
+      return;
+    }
+
+    var navigationEntry = performance.getEntriesByType
+      ? performance.getEntriesByType("navigation")[0]
+      : null;
+
+    if (navigationEntry && navigationEntry.type === "back_forward") {
+      return;
+    }
+
+    function getVisualStartScrollLeft(element) {
+      var maxScroll = element.scrollWidth - element.clientWidth;
+
+      if (maxScroll <= 0) {
+        return 0;
+      }
+
+      var original = element.scrollLeft;
+
+      element.scrollLeft = 0;
+      var zero = element.scrollLeft;
+
+      element.scrollLeft = 1;
+      var positive = element.scrollLeft;
+
+      element.scrollLeft = -1;
+      var negative = element.scrollLeft;
+
+      element.scrollLeft = original;
+
+      if (zero === 0 && positive === 0 && negative < 0) {
+        return 0;
+      }
+
+      if (zero === 0 && positive > 0) {
+        return 0;
+      }
+
+      return maxScroll;
+    }
+
+    function alignToArticleStart() {
+      viewport.scrollLeft = getVisualStartScrollLeft(viewport);
+    }
+
+    requestAnimationFrame(function () {
+      alignToArticleStart();
+
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(function () {
+          requestAnimationFrame(alignToArticleStart);
+        });
+      }
+    });
+  })();
+</script>
