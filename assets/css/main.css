@@ -10,7 +10,7 @@
   --scrollbar-thumb-start: rgba(196, 187, 174, 0.94);
   --scrollbar-thumb-end: rgba(173, 164, 152, 0.92);
   --scrollbar-thumb-shadow: rgba(72, 64, 55, 0.12);
-  --content-viewer-height-desktop: 44em;
+  --content-viewer-height-desktop: 45em;
   --content-viewer-height-tablet: 41em;
   --content-viewer-height-mobile: 39em;
 }
