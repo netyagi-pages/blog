@@ -59,9 +59,53 @@ layout: default
     var shouldPreserveScroll = navigationEntry && navigationEntry.type === "back_forward";
     var metrics = null;
     var dragState = null;
+    var dragSelectionClass = "is-dragging-scrollbar";
+    var dragScrollLockClass = "is-scroll-locked";
+    var lockedScrollY = 0;
 
     function clamp(value, min, max) {
       return Math.min(Math.max(value, min), max);
+    }
+
+    function clearSelection() {
+      var selection = window.getSelection ? window.getSelection() : null;
+
+      if (selection && selection.removeAllRanges) {
+        selection.removeAllRanges();
+      }
+    }
+
+    function handleSelectStart(event) {
+      if (!dragState) {
+        return;
+      }
+
+      event.preventDefault();
+    }
+
+    function enableDragSelectionLock() {
+      document.documentElement.classList.add(dragSelectionClass);
+      clearSelection();
+      document.addEventListener("selectstart", handleSelectStart);
+    }
+
+    function disableDragSelectionLock() {
+      document.documentElement.classList.remove(dragSelectionClass);
+      document.removeEventListener("selectstart", handleSelectStart);
+    }
+
+    function enablePageScrollLock() {
+      lockedScrollY = window.scrollY || window.pageYOffset || 0;
+      document.documentElement.classList.add(dragScrollLockClass);
+      document.body.style.top = -lockedScrollY + "px";
+      document.body.style.width = "100%";
+    }
+
+    function disablePageScrollLock() {
+      document.documentElement.classList.remove(dragScrollLockClass);
+      document.body.style.top = "";
+      document.body.style.width = "";
+      window.scrollTo(0, lockedScrollY);
     }
 
     function getBestStartScrollLeft(element, startMarker, candidates) {
@@ -237,6 +281,8 @@ layout: default
 
     function stopDragging() {
       dragState = null;
+      disableDragSelectionLock();
+      disablePageScrollLock();
       document.removeEventListener("pointermove", handlePointerMove);
       document.removeEventListener("pointerup", stopDragging);
       document.removeEventListener("pointercancel", stopDragging);
@@ -246,6 +292,8 @@ layout: default
       if (!dragState || !metrics) {
         return;
       }
+
+      event.preventDefault();
 
       var trackRect = track.getBoundingClientRect();
       var thumbRect = thumb.getBoundingClientRect();
@@ -262,11 +310,14 @@ layout: default
       }
 
       if (event.target === thumb) {
+        event.preventDefault();
         dragState = {
           startX: event.clientX,
           startProgress: getDisplayProgress()
         };
 
+        enableDragSelectionLock();
+        enablePageScrollLock();
         thumb.setPointerCapture(event.pointerId);
         document.addEventListener("pointermove", handlePointerMove);
         document.addEventListener("pointerup", stopDragging);
@@ -274,6 +325,7 @@ layout: default
         return;
       }
 
+      event.preventDefault();
       jumpToClientX(event.clientX);
     });
 

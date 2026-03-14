@@ -5,11 +5,11 @@
   --ink: #1f1a17;
   --line: rgba(31, 26, 23, 0.18);
   --accent: #8a2e24;
-  --scrollbar-track: rgba(176, 154, 126, 0.26);
-  --scrollbar-focus: rgba(195, 170, 138, 0.34);
-  --scrollbar-thumb-start: rgba(210, 188, 155, 0.96);
-  --scrollbar-thumb-end: rgba(190, 164, 132, 0.94);
-  --scrollbar-thumb-shadow: rgba(88, 67, 46, 0.14);
+  --scrollbar-track: rgba(164, 157, 147, 0.24);
+  --scrollbar-focus: rgba(177, 169, 158, 0.3);
+  --scrollbar-thumb-start: rgba(196, 187, 174, 0.94);
+  --scrollbar-thumb-end: rgba(173, 164, 152, 0.92);
+  --scrollbar-thumb-shadow: rgba(72, 64, 55, 0.12);
   --content-viewer-height-desktop: 44em;
   --content-viewer-height-tablet: 41em;
   --content-viewer-height-mobile: 39em;
@@ -17,6 +17,28 @@
 
 * {
   box-sizing: border-box;
+}
+
+html.is-dragging-scrollbar,
+html.is-dragging-scrollbar body,
+html.is-dragging-scrollbar .content-viewer,
+html.is-dragging-scrollbar .content-viewer * {
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grabbing;
+}
+
+html.is-scroll-locked,
+html.is-scroll-locked body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+html.is-scroll-locked body {
+  position: fixed;
+  left: 0;
+  right: 0;
+  touch-action: none;
 }
 
 html,
@@ -199,10 +221,10 @@ a {
     --ink: #f3eee6;
     --line: rgba(243, 238, 230, 0.2);
     --accent: #d18e73;
-    --scrollbar-track: rgba(238, 222, 193, 0.16);
-    --scrollbar-focus: rgba(224, 201, 169, 0.28);
-    --scrollbar-thumb-start: rgba(205, 185, 154, 0.92);
-    --scrollbar-thumb-end: rgba(175, 151, 118, 0.9);
+    --scrollbar-track: rgba(220, 212, 201, 0.14);
+    --scrollbar-focus: rgba(205, 194, 180, 0.24);
+    --scrollbar-thumb-start: rgba(187, 177, 164, 0.9);
+    --scrollbar-thumb-end: rgba(156, 145, 132, 0.88);
     --scrollbar-thumb-shadow: rgba(0, 0, 0, 0.26);
   }
 
