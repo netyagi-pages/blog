@@ -11,6 +11,11 @@ layout: default
   <div class="content-viewer content-viewer--full">
     <div class="content-viewer__viewport" data-initial-scroll="article-start">
       <div class="content-viewer__flow">
+        <span
+          aria-hidden="true"
+          data-article-start-marker
+          style="display:block;width:0;height:0;overflow:hidden;pointer-events:none;"
+        ></span>
         {{ content }}
       </div>
     </div>
@@ -20,8 +25,9 @@ layout: default
 <script>
   (function () {
     var viewport = document.querySelector('[data-initial-scroll="article-start"]');
+    var marker = viewport ? viewport.querySelector("[data-article-start-marker]") : null;
 
-    if (!viewport) {
+    if (!viewport || !marker) {
       return;
     }
 
@@ -33,39 +39,54 @@ layout: default
       return;
     }
 
-    function getVisualStartScrollLeft(element) {
+    function getBestStartScrollLeft(element, startMarker) {
       var maxScroll = element.scrollWidth - element.clientWidth;
 
       if (maxScroll <= 0) {
         return 0;
       }
 
+      var viewportRect = element.getBoundingClientRect();
       var original = element.scrollLeft;
+      var candidates = [0, maxScroll, -maxScroll];
+      var seen = {};
+      var best = null;
 
-      element.scrollLeft = 0;
-      var zero = element.scrollLeft;
+      function evaluateCandidate(candidate) {
+        element.scrollLeft = candidate;
 
-      element.scrollLeft = 1;
-      var positive = element.scrollLeft;
+        var actual = element.scrollLeft;
+        var key = String(actual);
 
-      element.scrollLeft = -1;
-      var negative = element.scrollLeft;
+        if (seen[key]) {
+          return;
+        }
 
+        seen[key] = true;
+
+        var markerRect = startMarker.getBoundingClientRect();
+        var isVisible =
+          markerRect.right >= viewportRect.left &&
+          markerRect.left <= viewportRect.right;
+        var distanceToRight = Math.abs(viewportRect.right - markerRect.right);
+        var score = isVisible ? distanceToRight : distanceToRight + viewportRect.width;
+
+        if (!best || score < best.score) {
+          best = {
+            score: score,
+            scrollLeft: actual
+          };
+        }
+      }
+
+      candidates.forEach(evaluateCandidate);
       element.scrollLeft = original;
 
-      if (zero === 0 && positive === 0 && negative < 0) {
-        return 0;
-      }
-
-      if (zero === 0 && positive > 0) {
-        return 0;
-      }
-
-      return maxScroll;
+      return best ? best.scrollLeft : 0;
     }
 
     function alignToArticleStart() {
-      viewport.scrollLeft = getVisualStartScrollLeft(viewport);
+      viewport.scrollLeft = getBestStartScrollLeft(viewport, marker);
     }
 
     requestAnimationFrame(function () {
