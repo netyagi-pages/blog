@@ -54,9 +54,9 @@ body {
     linear-gradient(180deg, #efe7d8 0%, var(--bg) 100%);
   color: var(--ink);
   font-family:
-    "Hiragino Mincho ProN",
     "Yu Mincho",
     "YuMincho",
+    "Hiragino Mincho ProN",
     "Noto Serif JP",
     "MS PMincho",
     serif;
