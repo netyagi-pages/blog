@@ -2,6 +2,11 @@
 layout: default
 ---
 
+{% assign content_align = page.content_align | default: "auto" | downcase %}
+{% unless content_align == "auto" or content_align == "start" or content_align == "center" %}
+  {% assign content_align = "auto" %}
+{% endunless %}
+
 <article class="post-card">
   <header class="post-header">
     <h1 class="post-title">{{ page.title }}</h1>
@@ -13,6 +18,7 @@ layout: default
       class="content-viewer__viewport"
       id="post-content-viewer-viewport"
       data-initial-scroll="article-start"
+      data-content-align="{{ content_align }}"
     >
       <div class="content-viewer__flow">
         <span
@@ -44,13 +50,20 @@ layout: default
 <script>
   (function () {
     var viewport = document.querySelector('[data-initial-scroll="article-start"]');
+    var viewer = viewport ? viewport.closest(".content-viewer") : null;
     var marker = viewport ? viewport.querySelector("[data-article-start-marker]") : null;
     var scrollbar = document.querySelector("[data-scrollbar]");
     var track = scrollbar ? scrollbar.querySelector("[data-scrollbar-track]") : null;
     var thumb = scrollbar ? scrollbar.querySelector("[data-scrollbar-thumb]") : null;
+    var compactCenterClass = "content-viewer--compact-center";
+    var alignMode = viewport ? viewport.getAttribute("data-content-align") || "auto" : "auto";
 
-    if (!viewport || !marker || !scrollbar || !track || !thumb) {
+    if (!viewport || !viewer || !marker || !scrollbar || !track || !thumb) {
       return;
+    }
+
+    if (alignMode !== "auto" && alignMode !== "start" && alignMode !== "center") {
+      alignMode = "auto";
     }
 
     var navigationEntry = performance.getEntriesByType
@@ -65,6 +78,22 @@ layout: default
 
     function clamp(value, min, max) {
       return Math.min(Math.max(value, min), max);
+    }
+
+    function isCompactLayout() {
+      return viewport.scrollWidth <= viewport.clientWidth + 1;
+    }
+
+    function shouldCenterCompactLayout() {
+      if (alignMode === "start") {
+        return false;
+      }
+
+      return isCompactLayout();
+    }
+
+    function applyLayoutMode() {
+      viewer.classList.toggle(compactCenterClass, shouldCenterCompactLayout());
     }
 
     function clearSelection() {
@@ -251,6 +280,7 @@ layout: default
     }
 
     function refreshMetrics() {
+      applyLayoutMode();
       metrics = getScrollMetrics();
       syncScrollbar();
     }

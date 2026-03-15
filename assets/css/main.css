@@ -134,6 +134,11 @@ a {
   scrollbar-color: transparent transparent;
 }
 
+.content-viewer--compact-center .content-viewer__viewport {
+  display: flex;
+  justify-content: center;
+}
+
 .content-viewer__flow {
   writing-mode: vertical-rl;
   text-orientation: mixed;
@@ -191,6 +196,12 @@ a {
 
 .content-viewer--full .content-viewer__flow {
   min-width: 100%;
+}
+
+.content-viewer--compact-center .content-viewer__flow,
+.content-viewer--full.content-viewer--compact-center .content-viewer__flow {
+  min-width: auto;
+  flex: 0 0 auto;
 }
 
 .content-viewer__flow > :first-child {
