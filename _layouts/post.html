@@ -75,9 +75,120 @@ layout: default
     var dragSelectionClass = "is-dragging-scrollbar";
     var dragScrollLockClass = "is-scroll-locked";
     var lockedScrollY = 0;
+    var punctuationClusterClass = "punctuation-cluster";
+    var punctuationClusterPattern = /[〈〉《》「」『』（）〔〕［］｛｝、。・：；？！]{2,}/g;
+    var vendor = navigator.vendor || "";
+    var userAgent = navigator.userAgent || "";
+    var isSafari =
+      vendor.indexOf("Apple") !== -1 &&
+      userAgent.indexOf("CriOS") === -1 &&
+      userAgent.indexOf("Chrome") === -1 &&
+      userAgent.indexOf("Chromium") === -1 &&
+      userAgent.indexOf("Edg") === -1 &&
+      userAgent.indexOf("Firefox") === -1 &&
+      userAgent.indexOf("FxiOS") === -1;
 
     function clamp(value, min, max) {
       return Math.min(Math.max(value, min), max);
+    }
+
+    function shouldSkipPunctuationAdjustment(node) {
+      var parent = node.parentElement;
+
+      if (!parent) {
+        return true;
+      }
+
+      return Boolean(
+        parent.closest(
+          "script, style, ruby, rt, ." + punctuationClusterClass + ", [data-article-start-marker]"
+        )
+      );
+    }
+
+    function appendPunctuationCluster(fragment, clusterText) {
+      var index = 0;
+
+      while (index < clusterText.length) {
+        if (index === 0) {
+          fragment.appendChild(document.createTextNode(clusterText.charAt(index)));
+        } else {
+          var clusterChar = document.createElement("span");
+          clusterChar.className = punctuationClusterClass;
+          clusterChar.textContent = clusterText.charAt(index);
+          fragment.appendChild(clusterChar);
+        }
+
+        index += 1;
+      }
+    }
+
+    function wrapPunctuationClustersInTextNode(textNode) {
+      if (!textNode || !textNode.nodeValue || !punctuationClusterPattern.test(textNode.nodeValue)) {
+        punctuationClusterPattern.lastIndex = 0;
+        return;
+      }
+
+      punctuationClusterPattern.lastIndex = 0;
+
+      var text = textNode.nodeValue;
+      var fragment = document.createDocumentFragment();
+      var lastIndex = 0;
+      var match = null;
+
+      while ((match = punctuationClusterPattern.exec(text))) {
+        if (match.index > lastIndex) {
+          fragment.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
+        }
+
+        appendPunctuationCluster(fragment, match[0]);
+        lastIndex = match.index + match[0].length;
+      }
+
+      if (lastIndex < text.length) {
+        fragment.appendChild(document.createTextNode(text.slice(lastIndex)));
+      }
+
+      if (textNode.parentNode) {
+        textNode.parentNode.replaceChild(fragment, textNode);
+      }
+    }
+
+    function applyPunctuationSpacingAdjustments() {
+      var flow = viewer ? viewer.querySelector(".content-viewer__flow") : null;
+
+      if (!isSafari || !flow || flow.hasAttribute("data-punctuation-adjusted")) {
+        return;
+      }
+
+      var walker = document.createTreeWalker(
+        flow,
+        NodeFilter.SHOW_TEXT,
+        {
+          acceptNode: function (node) {
+            if (shouldSkipPunctuationAdjustment(node)) {
+              return NodeFilter.FILTER_REJECT;
+            }
+
+            if (!node.nodeValue || !punctuationClusterPattern.test(node.nodeValue)) {
+              punctuationClusterPattern.lastIndex = 0;
+              return NodeFilter.FILTER_REJECT;
+            }
+
+            punctuationClusterPattern.lastIndex = 0;
+            return NodeFilter.FILTER_ACCEPT;
+          }
+        }
+      );
+      var textNodes = [];
+      var currentNode = null;
+
+      while ((currentNode = walker.nextNode())) {
+        textNodes.push(currentNode);
+      }
+
+      textNodes.forEach(wrapPunctuationClustersInTextNode);
+      flow.setAttribute("data-punctuation-adjusted", "true");
     }
 
     function isCompactLayout() {
@@ -395,6 +506,7 @@ layout: default
     });
 
     requestAnimationFrame(function () {
+      applyPunctuationSpacingAdjustments();
       refreshMetrics();
 
       if (!shouldPreserveScroll) {
