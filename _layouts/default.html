@@ -10,7 +10,10 @@
   <body>
     <div class="site-shell">
       <header class="site-header">
-        <a class="site-title" href="{{ '/' | relative_url }}">{{ site.title }}</a>
+        <div class="site-header__main">
+          <a class="site-title" href="{{ '/' | relative_url }}">{{ site.title }}</a>
+          <p class="site-tagline">it's something humans do</p>
+        </div>
       </header>
       <main class="site-content">
         {{ content }}
@@ -18,4 +21,3 @@
     </div>
   </body>
 </html>
-

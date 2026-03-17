@@ -74,13 +74,32 @@ a {
 }
 
 .site-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   margin-bottom: 24px;
+}
+
+.site-header__main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
 }
 
 .site-title {
   text-decoration: none;
-  font-size: 1rem;
+  font-size: 1.18rem;
   letter-spacing: 0.08em;
+}
+
+.site-tagline {
+  margin: 0;
+  font-size: 0.84rem;
+  letter-spacing: 0.04em;
+  color: rgba(31, 26, 23, 0.58);
+  line-height: 1.4;
 }
 
 .site-content {
@@ -94,6 +113,23 @@ a {
 
 .post-card {
   min-width: 0;
+}
+
+.home-title {
+  margin: 0 0 0.67em;
+}
+
+.entry-list {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.entry-list__item + .entry-list__item {
+  margin-top: 0.45em;
+}
+
+.entry-list__link {
+  text-decoration: underline;
 }
 
 .post-header {
@@ -282,6 +318,10 @@ a {
     color: rgba(243, 238, 230, 0.72);
   }
 
+  .site-tagline {
+    color: rgba(243, 238, 230, 0.68);
+  }
+
   a:hover {
     color: var(--accent);
   }
@@ -315,6 +355,14 @@ a {
 @media (max-width: 640px) {
   .site-shell {
     padding: 12px;
+  }
+
+  .site-header {
+    gap: 10px;
+  }
+
+  .site-tagline {
+    font-size: 0.78rem;
   }
 
   .site-content {
