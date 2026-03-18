@@ -10,3 +10,5 @@ show_date: false
 
 　メインのブログとしては〈[note](https://note.com/netyagi)〉を使っています。
 　noteにアップロードしている記事の中から、縦書きで表示したいなと思った記事をここにもアップロードしています。
+
+　[Xのアカウント](https://x.com/netyagi)もいちおう置いておきます。
